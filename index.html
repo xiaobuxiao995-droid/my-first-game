@@ -3,415 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2048 新手版</title>
+  <title>无敌的像素马里奥！</title>
+  <meta http-equiv="refresh" content="0; url=super_mario.html" />
   <style>
-    :root {
-      --bg: #f7f4ef;
-      --panel: #ffffff;
-      --text: #5b5247;
-      --accent: #8f7a66;
-      --grid-bg: #bbada0;
-      --cell-empty: rgba(238, 228, 218, 0.35);
-      --radius: 12px;
-    }
-
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: linear-gradient(135deg, #fdfaf6, #f4efe7);
-      color: var(--text);
-      padding: 20px;
-    }
-
-    .app {
-      width: min(92vw, 460px);
-      background: var(--panel);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(111, 93, 78, 0.15);
-      padding: 20px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 40px;
-      color: var(--accent);
-    }
-
-    .desc {
-      margin: 0 0 16px;
-      font-size: 14px;
-      color: #8b7e72;
-    }
-
-    .topbar {
+      margin: 0;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .score-box {
-      background: #eee4da;
-      color: #776e65;
-      border-radius: 10px;
-      padding: 8px 12px;
-      min-width: 110px;
+      justify-content: center;
+      background: linear-gradient(180deg, #78d5ff, #62b956);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
       text-align: center;
-      font-weight: 700;
+      color: #1d1d1d;
     }
-
-    .score-box small {
-      display: block;
-      font-size: 12px;
-      opacity: 0.8;
+    .card {
+      background: rgba(255,255,255,.92);
+      border: 4px solid #1d1d1d;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.2);
     }
-
-    .btns {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border: none;
-      cursor: pointer;
-      background: var(--accent);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: 700;
-      transition: transform .08s ease, opacity .2s ease;
-    }
-
-    button:hover { opacity: .9; }
-    button:active { transform: scale(.98); }
-
-    .board-wrap {
-      position: relative;
-    }
-
-    .board {
-      background: var(--grid-bg);
-      border-radius: var(--radius);
-      padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      aspect-ratio: 1 / 1;
-      user-select: none;
-      touch-action: none;
-    }
-
-    .cell {
-      border-radius: 8px;
-      background: var(--cell-empty);
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      font-size: clamp(22px, 6vw, 34px);
-      color: #776e65;
-    }
-
-    /* 数字块颜色映射，让不同数字更容易区分 */
-    .v-0 { color: transparent; }
-    .v-2 { background: #eee4da; }
-    .v-4 { background: #ede0c8; }
-    .v-8 { background: #f2b179; color: #f9f6f2; }
-    .v-16 { background: #f59563; color: #f9f6f2; }
-    .v-32 { background: #f67c5f; color: #f9f6f2; }
-    .v-64 { background: #f65e3b; color: #f9f6f2; }
-    .v-128 { background: #edcf72; color: #f9f6f2; font-size: clamp(18px, 5vw, 28px); }
-    .v-256 { background: #edcc61; color: #f9f6f2; font-size: clamp(18px, 5vw, 28px); }
-    .v-512 { background: #edc850; color: #f9f6f2; font-size: clamp(18px, 5vw, 28px); }
-    .v-1024 { background: #edc53f; color: #f9f6f2; font-size: clamp(16px, 4.5vw, 24px); }
-    .v-2048 { background: #edc22e; color: #f9f6f2; font-size: clamp(16px, 4.5vw, 24px); }
-    .v-big { background: #3c3a32; color: #f9f6f2; font-size: clamp(14px, 4vw, 20px); }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.82);
-      display: none;
-      place-items: center;
-      text-align: center;
-      padding: 18px;
-    }
-
-    .overlay.show { display: grid; }
-
-    .overlay h2 {
-      margin: 0 0 10px;
-      color: #6b5d50;
-    }
-
-    .tip {
+    h1 { color: #e6372e; text-shadow: 3px 3px 0 #ffd85b; }
+    a {
+      display: inline-block;
       margin-top: 12px;
-      font-size: 13px;
-      color: #8e8278;
-      line-height: 1.5;
+      background: #e6372e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: bold;
+      border: 3px solid #1d1d1d;
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <h1>2048</h1>
-    <p class="desc">方向键或滑动屏幕来移动数字，合并相同数字拿高分！</p>
-
-    <div class="topbar">
-      <div class="score-box">
-        <small>当前分数</small>
-        <span id="score">0</span>
-      </div>
-      <div class="btns">
-        <button id="startBtn">开始游戏</button>
-        <button id="restartBtn">重新开始</button>
-      </div>
-    </div>
-
-    <div class="board-wrap">
-      <div id="board" class="board"></div>
-      <div id="overlay" class="overlay show">
-        <div>
-          <h2 id="message">点击“开始游戏”</h2>
-          <button id="overlayRestartBtn">重新开始</button>
-        </div>
-      </div>
-    </div>
-
-    <p class="tip">提示：每次移动后会随机生成一个 2 或 4。无法移动时游戏结束。</p>
-  </main>
-
+  <div class="card">
+    <h1>无敌的像素马里奥！</h1>
+    <p>正在进入游戏...</p>
+    <a href="super_mario.html">点击进入游戏</a>
+  </div>
   <script>
-    // ========== 基础配置 ==========
-    const SIZE = 4; // 4x4 棋盘
-    let board = []; // 用二维数组保存棋盘数字
-    let score = 0;
-    let started = false; // 标记是否已开始，防止误操作
-
-    const boardEl = document.getElementById('board');
-    const scoreEl = document.getElementById('score');
-    const overlayEl = document.getElementById('overlay');
-    const messageEl = document.getElementById('message');
-    const startBtn = document.getElementById('startBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const overlayRestartBtn = document.getElementById('overlayRestartBtn');
-
-    // 创建 16 个格子（只创建一次，后续只更新内容和样式）
-    const cells = [];
-    for (let i = 0; i < SIZE * SIZE; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell v-0';
-      boardEl.appendChild(cell);
-      cells.push(cell);
-    }
-
-    // 初始化游戏数据
-    function initGame() {
-      board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
-      score = 0;
-      started = true;
-      addRandomTile();
-      addRandomTile();
-      updateView();
-      hideOverlay();
-    }
-
-    // 在空格里随机放一个数字（90% 概率是 2，10% 概率是 4）
-    function addRandomTile() {
-      const empty = [];
-      for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-          if (board[r][c] === 0) empty.push([r, c]);
-        }
-      }
-      if (!empty.length) return;
-
-      const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-      board[r][c] = Math.random() < 0.9 ? 2 : 4;
-    }
-
-    // 更新页面显示
-    function updateView() {
-      scoreEl.textContent = score;
-      for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-          const value = board[r][c];
-          const idx = r * SIZE + c;
-          const cell = cells[idx];
-          cell.textContent = value === 0 ? '' : value;
-
-          // 先重置 class，再加当前数字 class
-          cell.className = 'cell';
-          if (value === 0) {
-            cell.classList.add('v-0');
-          } else if (value <= 2048) {
-            cell.classList.add(`v-${value}`);
-          } else {
-            cell.classList.add('v-big');
-          }
-        }
-      }
-    }
-
-    // 把一行数字向左压缩并合并，返回新行 + 增加的分数 + 是否变化
-    function compressRowLeft(row) {
-      const nums = row.filter(n => n !== 0); // 去掉 0
-      let gained = 0;
-
-      for (let i = 0; i < nums.length - 1; i++) {
-        if (nums[i] === nums[i + 1]) {
-          nums[i] *= 2;
-          gained += nums[i];
-          nums[i + 1] = 0; // 已合并的后一位清零
-          i++; // 跳过下一位，避免连续重复合并
-        }
-      }
-
-      const merged = nums.filter(n => n !== 0);
-      while (merged.length < SIZE) merged.push(0);
-
-      const changed = merged.some((n, i) => n !== row[i]);
-      return { row: merged, gained, changed };
-    }
-
-    // 转置矩阵（上下不变，行列互换）
-    function transpose(mat) {
-      return mat[0].map((_, c) => mat.map(row => row[c]));
-    }
-
-    // 主移动函数：left/right/up/down
-    function move(direction) {
-      if (!started) return;
-
-      let moved = false;
-      let gainedTotal = 0;
-      let temp = board.map(row => [...row]);
-
-      // 为了复用“向左合并”逻辑，这里对矩阵做旋转/翻转处理
-      if (direction === 'up' || direction === 'down') temp = transpose(temp);
-
-      for (let r = 0; r < SIZE; r++) {
-        let row = [...temp[r]];
-
-        if (direction === 'right' || direction === 'down') row.reverse();
-
-        const result = compressRowLeft(row);
-
-        row = result.row;
-        if (direction === 'right' || direction === 'down') row.reverse();
-
-        temp[r] = row;
-        gainedTotal += result.gained;
-        if (result.changed) moved = true;
-      }
-
-      if (direction === 'up' || direction === 'down') temp = transpose(temp);
-
-      if (!moved) return;
-
-      board = temp;
-      score += gainedTotal;
-      addRandomTile();
-      updateView();
-
-      if (isGameOver()) {
-        showOverlay('游戏结束 😢\n你的分数：' + score);
-      }
-    }
-
-    // 判断是否游戏结束：没有空位且四个方向都不能移动
-    function isGameOver() {
-      for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-          if (board[r][c] === 0) return false;
-        }
-      }
-
-      const dirs = ['left', 'right', 'up', 'down'];
-      for (const dir of dirs) {
-        if (canMove(dir)) return false;
-      }
-      return true;
-    }
-
-    // 试探某方向是否可以移动（不改原棋盘）
-    function canMove(direction) {
-      let temp = board.map(row => [...row]);
-      if (direction === 'up' || direction === 'down') temp = transpose(temp);
-
-      for (let r = 0; r < SIZE; r++) {
-        let row = [...temp[r]];
-        if (direction === 'right' || direction === 'down') row.reverse();
-        const { changed } = compressRowLeft(row);
-        if (changed) return true;
-      }
-      return false;
-    }
-
-    function showOverlay(text) {
-      messageEl.textContent = text;
-      overlayEl.classList.add('show');
-      started = false;
-    }
-
-    function hideOverlay() {
-      overlayEl.classList.remove('show');
-    }
-
-    // 键盘控制
-    window.addEventListener('keydown', (e) => {
-      const map = {
-        ArrowLeft: 'left',
-        ArrowRight: 'right',
-        ArrowUp: 'up',
-        ArrowDown: 'down'
-      };
-      const dir = map[e.key];
-      if (!dir) return;
-      e.preventDefault();
-      move(dir);
-    });
-
-    // 触屏滑动控制（移动端友好）
-    let startX = 0;
-    let startY = 0;
-    boardEl.addEventListener('touchstart', (e) => {
-      const t = e.changedTouches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-    }, { passive: true });
-
-    boardEl.addEventListener('touchend', (e) => {
-      const t = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-
-      // 位移太小就忽略，避免误触
-      if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        move(dx > 0 ? 'right' : 'left');
-      } else {
-        move(dy > 0 ? 'down' : 'up');
-      }
-    }, { passive: true });
-
-    // 按钮事件
-    startBtn.addEventListener('click', initGame);
-    restartBtn.addEventListener('click', initGame);
-    overlayRestartBtn.addEventListener('click', initGame);
-
-    // 初始状态：显示空棋盘 + 引导文案
-    board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
-    updateView();
+    window.location.replace('super_mario.html');
   </script>
 </body>
 </html>
