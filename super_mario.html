@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mini Jump Adventure</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, #82cfff 0%, #d9f4ff 52%, #9be27b 52%, #4fa83b 100%);
+      overflow: hidden;
+      color: #222;
+    }
+
+    .game-shell {
+      width: min(96vw, 980px);
+      background: rgba(255,255,255,.86);
+      border: 4px solid #2d2d2d;
+      border-radius: 22px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.22);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .topbar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: linear-gradient(90deg, #ffcf4a, #ff934a);
+      border-bottom: 4px solid #2d2d2d;
+      font-weight: 900;
+    }
+
+    .brand {
+      font-size: 18px;
+      letter-spacing: .5px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .stat-pill {
+      background: rgba(255,255,255,.72);
+      border: 2px solid rgba(0,0,0,.22);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: linear-gradient(#78cfff 0%, #b9ecff 58%, #71bf4b 58%, #47952e 100%);
+    }
+
+    .overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 56px;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.66);
+      backdrop-filter: blur(3px);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .panel {
+      max-width: 500px;
+      background: rgba(255,255,255,.94);
+      border: 4px solid #2d2d2d;
+      border-radius: 22px;
+      padding: 26px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.18);
+    }
+
+    .panel h1 {
+      font-size: clamp(30px, 6vw, 52px);
+      margin-bottom: 8px;
+      color: #e33c2e;
+      text-shadow: 2px 2px 0 #ffd45b;
+    }
+
+    .panel p {
+      line-height: 1.7;
+      color: #444;
+      margin-bottom: 18px;
+      font-size: 15px;
+    }
+
+    button {
+      border: 0;
+      background: #e33c2e;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      padding: 14px 26px;
+      border-radius: 999px;
+      cursor: pointer;
+      border: 3px solid #2d2d2d;
+      box-shadow: 0 6px 0 #8b1d16;
+      transition: transform .08s ease, box-shadow .08s ease;
+    }
+
+    button:active {
+      transform: translateY(5px);
+      box-shadow: 0 1px 0 #8b1d16;
+    }
+
+    .mobile-controls {
+      display: none;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+      background: #ffffff;
+      border-top: 4px solid #2d2d2d;
+    }
+
+    .control-btn {
+      user-select: none;
+      text-align: center;
+      padding: 14px 0;
+      border: 3px solid #2d2d2d;
+      border-radius: 16px;
+      font-size: 22px;
+      font-weight: 900;
+      background: #f1f1f1;
+      box-shadow: 0 4px 0 #b0b0b0;
+    }
+
+    .control-btn:active,
+    .control-btn.active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #b0b0b0;
+      background: #ffe08a;
+    }
+
+    @media (max-width: 720px) {
+      body { align-items: flex-start; padding-top: 8px; }
+      .topbar { height: 52px; padding: 0 10px; }
+      .brand { font-size: 14px; }
+      .stats { gap: 6px; font-size: 12px; }
+      .stat-pill { padding: 5px 7px; }
+      .overlay { top: 52px; bottom: 80px; }
+      .mobile-controls { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand">MINI JUMP ADVENTURE</div>
+      <div class="stats">
+        <div class="stat-pill">Coins: <span id="coinText">0</span></div>
+        <div class="stat-pill">Lives: <span id="lifeText">3</span></div>
+        <div class="stat-pill">Time: <span id="timeText">90</span></div>
+      </div>
+    </header>
+
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <h1>Mini Jump</h1>
+        <p>
+          原创横版跳跃小游戏。左右移动、跳跃、收集金币，避开小怪，抵达右侧终点旗帜。<br>
+          电脑用方向键 / A D / 空格；手机用底部按钮。点击开始后会启用音效。
+        </p>
+        <button id="startBtn">开始游戏</button>
+      </div>
+    </div>
+
+    <div class="mobile-controls">
+      <div id="leftBtn" class="control-btn">←</div>
+      <div id="jumpBtn" class="control-btn">↑</div>
+      <div id="rightBtn" class="control-btn">→</div>
+    </div>
+  </main>
+
+  <script>
+    // =============================
+    // 这是一个原创“横版跳跃”小游戏。
+    // 没有使用任何现成游戏素材，适合浏览器直接打开。
+    // =============================
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const overlay = document.getElementById('overlay');
+    const startBtn = document.getElementById('startBtn');
+    const coinText = document.getElementById('coinText');
+    const lifeText = document.getElementById('lifeText');
+    const timeText = document.getElementById('timeText');
+
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+    const jumpBtn = document.getElementById('jumpBtn');
+
+    // 游戏世界比画布更宽，镜头会跟随角色移动
+    const worldWidth = 2600;
+    const floorY = 458;
+    let cameraX = 0;
+    let animationId = null;
+    let lastTime = 0;
+    let gameState = 'menu';
+    let timeLeft = 90;
+    let timerId = null;
+
+    // 浏览器内置音效，不需要额外 mp3 文件
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, duration = 0.12, type = 'square', volume = 0.08) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function soundJump() { playTone(520, 0.11, 'square', 0.07); }
+    function soundCoin() {
+      playTone(880, 0.08, 'triangle', 0.08);
+      setTimeout(() => playTone(1160, 0.08, 'triangle', 0.07), 70);
+    }
+    function soundHit() { playTone(140, 0.22, 'sawtooth', 0.08); }
+    function soundWin() {
+      [520, 660, 780, 1040].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'triangle', 0.08), i * 120));
+    }
+
+    const keys = {
+      left: false,
+      right: false,
+      jump: false
+    };
+
+    const player = {
+      x: 80,
+      y: 360,
+      w: 36,
+      h: 48,
+      vx: 0,
+      vy: 0,
+      speed: 5.4,
+      jumpPower: 15,
+      onGround: false,
+      coins: 0,
+      lives: 3,
+      invincible: 0
+    };
+
+    const platforms = [
+      { x: 0, y: floorY, w: 530, h: 82 },
+      { x: 610, y: floorY, w: 360, h: 82 },
+      { x: 1060, y: floorY, w: 400, h: 82 },
+      { x: 1540, y: floorY, w: 420, h: 82 },
+      { x: 2050, y: floorY, w: 550, h: 82 },
+      { x: 410, y: 340, w: 150, h: 28 },
+      { x: 760, y: 275, w: 140, h: 28 },
+      { x: 1110, y: 350, w: 160, h: 28 },
+      { x: 1370, y: 270, w: 150, h: 28 },
+      { x: 1760, y: 330, w: 170, h: 28 },
+      { x: 2170, y: 280, w: 190, h: 28 }
+    ];
+
+    const coins = [
+      { x: 440, y: 295, r: 12, got: false },
+      { x: 500, y: 295, r: 12, got: false },
+      { x: 790, y: 230, r: 12, got: false },
+      { x: 850, y: 230, r: 12, got: false },
+      { x: 1160, y: 305, r: 12, got: false },
+      { x: 1420, y: 225, r: 12, got: false },
+      { x: 1800, y: 285, r: 12, got: false },
+      { x: 1860, y: 285, r: 12, got: false },
+      { x: 2220, y: 235, r: 12, got: false },
+      { x: 2300, y: 235, r: 12, got: false }
+    ];
+
+    const enemies = [
+      { x: 690, y: floorY - 34, w: 38, h: 34, min: 630, max: 930, vx: 1.5, alive: true },
+      { x: 1230, y: floorY - 34, w: 38, h: 34, min: 1090, max: 1450, vx: 1.8, alive: true },
+      { x: 1670, y: floorY - 34, w: 38, h: 34, min: 1560, max: 1940, vx: 1.6, alive: true },
+      { x: 2120, y: floorY - 34, w: 38, h: 34, min: 2070, max: 2520, vx: 2.0, alive: true }
+    ];
+
+    const flag = { x: 2480, y: floorY - 150, w: 24, h: 150 };
+
+    function resetGame() {
+      cameraX = 0;
+      timeLeft = 90;
+      Object.assign(player, {
+        x: 80,
+        y: 360,
+        w: 36,
+        h: 48,
+        vx: 0,
+        vy: 0,
+        onGround: false,
+        coins: 0,
+        lives: 3,
+        invincible: 0
+      });
+      coins.forEach(c => c.got = false);
+      enemies.forEach(e => e.alive = true);
+      updateUI();
+    }
+
+    function startGame() {
+      initAudio();
+      resetGame();
+      gameState = 'playing';
+      overlay.style.display = 'none';
+      lastTime = performance.now();
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(() => {
+        if (gameState !== 'playing') return;
+        timeLeft--;
+        updateUI();
+        if (timeLeft <= 0) loseLife();
+      }, 1000);
+      cancelAnimationFrame(animationId);
+      gameLoop(lastTime);
+    }
+
+    function updateUI() {
+      coinText.textContent = player.coins;
+      lifeText.textContent = player.lives;
+      timeText.textContent = timeLeft;
+    }
+
+    function showMessage(title, text, button = '再玩一次') {
+      overlay.innerHTML = `
+        <div class="panel">
+          <h1>${title}</h1>
+          <p>${text}</p>
+          <button id="againBtn">${button}</button>
+        </div>`;
+      overlay.style.display = 'flex';
+      document.getElementById('againBtn').addEventListener('click', startGame);
+    }
+
+    function rectsOverlap(a, b) {
+      return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    }
+
+    function circleRectOverlap(circle, rect) {
+      const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
+      const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
+      const dx = circle.x - closestX;
+      const dy = circle.y - closestY;
+      return dx * dx + dy * dy < circle.r * circle.r;
+    }
+
+    function jump() {
+      if (player.onGround) {
+        player.vy = -player.jumpPower;
+        player.onGround = false;
+        soundJump();
+      }
+    }
+
+    function loseLife() {
+      if (player.invincible > 0) return;
+      soundHit();
+      player.lives--;
+      updateUI();
+      if (player.lives <= 0) {
+        gameState = 'over';
+        clearInterval(timerId);
+        showMessage('Game Over', `你收集了 ${player.coins} 枚金币。再试一次吧！`);
+        return;
+      }
+      player.x = Math.max(80, cameraX + 70);
+      player.y = 250;
+      player.vx = 0;
+      player.vy = 0;
+      player.invincible = 90;
+    }
+
+    function updatePlayer() {
+      const accel = 0.85;
+      const friction = 0.82;
+      const gravity = 0.72;
+
+      if (keys.left) player.vx -= accel;
+      if (keys.right) player.vx += accel;
+      if (!keys.left && !keys.right) player.vx *= friction;
+
+      player.vx = Math.max(-player.speed, Math.min(player.speed, player.vx));
+      player.vy += gravity;
+      player.vy = Math.min(player.vy, 18);
+
+      // 横向移动与碰撞
+      player.x += player.vx;
+      player.x = Math.max(0, Math.min(worldWidth - player.w, player.x));
+
+      // 纵向移动与平台碰撞
+      player.y += player.vy;
+      player.onGround = false;
+      for (const p of platforms) {
+        if (rectsOverlap(player, p)) {
+          if (player.vy > 0 && player.y + player.h - player.vy <= p.y + 4) {
+            player.y = p.y - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          } else if (player.vy < 0 && player.y >= p.y + p.h - 4) {
+            player.y = p.y + p.h;
+            player.vy = 0;
+          } else if (player.vx > 0) {
+            player.x = p.x - player.w;
+            player.vx = 0;
+          } else if (player.vx < 0) {
+            player.x = p.x + p.w;
+            player.vx = 0;
+          }
+        }
+      }
+
+      if (player.y > canvas.height + 120) loseLife();
+      if (player.invincible > 0) player.invincible--;
+
+      // 镜头跟随
+      cameraX = player.x - canvas.width * 0.38;
+      cameraX = Math.max(0, Math.min(worldWidth - canvas.width, cameraX));
+    }
+
+    function updateEnemies() {
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        e.x += e.vx;
+        if (e.x < e.min || e.x > e.max) e.vx *= -1;
+
+        if (rectsOverlap(player, e)) {
+          // 如果从上面踩到敌人，敌人消失；否则玩家受伤
+          if (player.vy > 0 && player.y + player.h - player.vy <= e.y + 8) {
+            e.alive = false;
+            player.vy = -10;
+            soundHit();
+          } else {
+            loseLife();
+          }
+        }
+      }
+    }
+
+    function updateCoins() {
+      for (const c of coins) {
+        if (c.got) continue;
+        if (circleRectOverlap(c, player)) {
+          c.got = true;
+          player.coins++;
+          soundCoin();
+          updateUI();
+        }
+      }
+    }
+
+    function checkWin() {
+      if (player.x + player.w > flag.x) {
+        gameState = 'win';
+        clearInterval(timerId);
+        soundWin();
+        showMessage('You Win!', `成功到达终点！你收集了 ${player.coins} / ${coins.length} 枚金币。`);
+      }
+    }
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 云朵
+      const cloudPositions = [120, 420, 860, 1280, 1740, 2220];
+      for (const x of cloudPositions) {
+        const sx = x - cameraX * 0.35;
+        drawCloud(sx, 78 + (x % 3) * 24);
+      }
+
+      // 远处小山
+      ctx.fillStyle = '#69b94a';
+      for (let x = -120; x < canvas.width + 200; x += 260) {
+        ctx.beginPath();
+        ctx.moveTo(x - (cameraX * 0.18 % 260), 458);
+        ctx.lineTo(x + 120 - (cameraX * 0.18 % 260), 320);
+        ctx.lineTo(x + 260 - (cameraX * 0.18 % 260), 458);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    function drawCloud(x, y) {
+      ctx.fillStyle = 'rgba(255,255,255,.92)';
+      ctx.beginPath();
+      ctx.arc(x, y, 24, 0, Math.PI * 2);
+      ctx.arc(x + 25, y - 12, 30, 0, Math.PI * 2);
+      ctx.arc(x + 58, y, 22, 0, Math.PI * 2);
+      ctx.rect(x - 6, y, 76, 24);
+      ctx.fill();
+    }
+
+    function drawPlatforms() {
+      for (const p of platforms) {
+        const x = p.x - cameraX;
+        if (x + p.w < -30 || x > canvas.width + 30) continue;
+
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(x, p.y, p.w, p.h);
+        ctx.fillStyle = '#5ab34d';
+        ctx.fillRect(x, p.y, p.w, Math.min(16, p.h));
+        ctx.strokeStyle = 'rgba(0,0,0,.22)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, p.y, p.w, p.h);
+
+        // 草地小线条
+        ctx.strokeStyle = 'rgba(255,255,255,.25)';
+        ctx.lineWidth = 2;
+        for (let i = 8; i < p.w; i += 34) {
+          ctx.beginPath();
+          ctx.moveTo(x + i, p.y + 4);
+          ctx.lineTo(x + i + 12, p.y + 11);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function drawCoins() {
+      for (const c of coins) {
+        if (c.got) continue;
+        const x = c.x - cameraX;
+        ctx.fillStyle = '#ffd331';
+        ctx.beginPath();
+        ctx.ellipse(x, c.y, c.r, c.r * 1.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a86c00';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = '#fff2a8';
+        ctx.fillRect(x - 3, c.y - 9, 6, 18);
+      }
+    }
+
+    function drawEnemies() {
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        const x = e.x - cameraX;
+        ctx.fillStyle = '#7b3fb7';
+        ctx.fillRect(x, e.y, e.w, e.h);
+        ctx.fillStyle = '#52267e';
+        ctx.fillRect(x, e.y + e.h - 8, e.w, 8);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x + 8, e.y + 8, 7, 7);
+        ctx.fillRect(x + 23, e.y + 8, 7, 7);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x + 11, e.y + 10, 3, 3);
+        ctx.fillRect(x + 26, e.y + 10, 3, 3);
+      }
+    }
+
+    function drawFlag() {
+      const x = flag.x - cameraX;
+      ctx.fillStyle = '#7c4a24';
+      ctx.fillRect(x, flag.y, flag.w, flag.h);
+      ctx.fillStyle = '#ff3d3d';
+      ctx.beginPath();
+      ctx.moveTo(x + flag.w, flag.y + 8);
+      ctx.lineTo(x + flag.w + 86, flag.y + 32);
+      ctx.lineTo(x + flag.w, flag.y + 58);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('GOAL', x + 32, flag.y + 38);
+    }
+
+    function drawPlayer() {
+      const x = player.x - cameraX;
+      const y = player.y;
+
+      // 受伤无敌时闪烁
+      if (player.invincible > 0 && Math.floor(player.invincible / 6) % 2 === 0) return;
+
+      // 原创小角色，不使用任何官方角色素材
+      ctx.fillStyle = '#e94132';
+      ctx.fillRect(x + 6, y, 24, 18);
+      ctx.fillStyle = '#ffd2a0';
+      ctx.fillRect(x + 8, y + 15, 22, 18);
+      ctx.fillStyle = '#2674d9';
+      ctx.fillRect(x + 4, y + 30, 28, 18);
+      ctx.fillStyle = '#111';
+      ctx.fillRect(x + 24, y + 20, 4, 4);
+      ctx.fillStyle = '#6b3517';
+      ctx.fillRect(x + 2, y + 44, 12, 5);
+      ctx.fillRect(x + 24, y + 44, 12, 5);
+    }
+
+    function draw() {
+      drawBackground();
+      drawPlatforms();
+      drawCoins();
+      drawEnemies();
+      drawFlag();
+      drawPlayer();
+    }
+
+    function update() {
+      if (gameState !== 'playing') return;
+      if (keys.jump) jump();
+      updatePlayer();
+      updateEnemies();
+      updateCoins();
+      checkWin();
+    }
+
+    function gameLoop(now) {
+      const dt = now - lastTime;
+      lastTime = now;
+      update(dt);
+      draw();
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    // 键盘控制
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+      if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') {
+        if (!keys.jump) jump();
+        keys.jump = true;
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+      if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') keys.jump = false;
+    });
+
+    // 手机按钮控制
+    function bindHoldButton(el, keyName) {
+      const down = (e) => {
+        e.preventDefault();
+        keys[keyName] = true;
+        el.classList.add('active');
+        if (keyName === 'jump') jump();
+      };
+      const up = (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+        el.classList.remove('active');
+      };
+      el.addEventListener('touchstart', down, { passive: false });
+      el.addEventListener('touchend', up, { passive: false });
+      el.addEventListener('touchcancel', up, { passive: false });
+      el.addEventListener('mousedown', down);
+      el.addEventListener('mouseup', up);
+      el.addEventListener('mouseleave', up);
+    }
+
+    bindHoldButton(leftBtn, 'left');
+    bindHoldButton(rightBtn, 'right');
+    bindHoldButton(jumpBtn, 'jump');
+
+    startBtn.addEventListener('click', startGame);
+
+    // 初始绘制一帧背景
+    resetGame();
+    draw();
+  </script>
+</body>
+</html>
